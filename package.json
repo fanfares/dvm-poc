@@ -1,0 +1,13 @@
+{
+  "name": "dvm-poc",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "repository": "https://github.com/fanfares/dvm-poc",
+  "author": "rleed <rleed1@pm.me>",
+  "license": "TBD",
+  "dependencies": {
+    "@types/node": "^20.14.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  }
+}
