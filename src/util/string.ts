@@ -18,3 +18,14 @@ export function bolt11amount(invoice: string) {
   if (a.endsWith('p')) return '' + (+a.substring(0, a.length - 1)) * (BOLT11_P * BOLT11_SATS)
   return a
 }
+
+export function humanReadableAge(n: number) {
+  let unit = 's'
+  if (n > 60) { n /= 60; unit = 'm'
+    if (n > 60) { n /= 60; unit = 'h' 
+      if (n > 24) { n /= 24; unit = 'd' 
+        if (n > 30) { n /= 30; unit = 'mo' 
+          if (n > 12) { n /= 12; unit = 'y'
+  } } } } }
+  return Math.round(n) + unit
+}
