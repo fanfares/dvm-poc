@@ -2,6 +2,10 @@ export function toSSCase(s: string) {
  return s.replace(' ','_').toUpperCase()
 }
 
+export function log(code: string, message: string) {
+  console.log(`${new Date().toISOString()} [${code}] ${message}`)
+}
+
 const BOLT11_SATS = 100000000
 const BOLT11_M = 0.001
 const BOLT11_U = 0.000001
@@ -19,8 +23,9 @@ export function bolt11amount(invoice: string) {
   return a
 }
 
-export function humanReadableAge(n: number) {
+export function humanReadableAge(timestamp: number, now = Math.floor(new Date().valueOf() / 1000)) {
   let unit = 's'
+  let n = now - timestamp
   if (n > 60) { n /= 60; unit = 'm'
     if (n > 60) { n /= 60; unit = 'h' 
       if (n > 24) { n /= 24; unit = 'd' 

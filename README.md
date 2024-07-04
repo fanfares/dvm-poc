@@ -9,5 +9,5 @@
 
 ## About
 
-- based on [flim](https://github.com/coracle-social/flim)
+- built using Coracle’s [Welshman](https://github.com/coracle-social/welshman) libraries
 
