@@ -1,8 +1,8 @@
 import { getEventHash, getPublicKey as getPk } from 'nostr-tools'
-import {schnorr} from "@noble/curves/secp256k1"
-import {equals} from "ramda"
-import {tryFunc} from "hurdak"
-import logger from "./logger"
+import { schnorr } from '@noble/curves/secp256k1'
+import { equals } from 'ramda'
+import { tryFunc } from 'hurdak'
+import logger from './logger'
 
 /* This file is mostly copy-and-pasted from other sources, with light adaptation */
 
@@ -75,4 +75,3 @@ export const tryJson = <T>(f: () => T) =>
       logger.warn(e)
     }
   })
-

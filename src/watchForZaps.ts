@@ -3,7 +3,7 @@ const { subscribe, executeSubscriptionBatched } = require('@welshman/net')
 
 export function watchForZaps(handler: (url: string, zapReceipt: any, dups: number) => void) {
   const sub = subscribe({
-    relays: ['wss://relay.wavlake.com', 'wss://relay.satoshidnc.com'],
+    relays: ['wss://relay.primal.net', 'wss://relay.fanfares.io', 'wss://relay.satoshidnc.com'],
     filters: [{
       kinds: [9735 /* zap receipt */],
     }],

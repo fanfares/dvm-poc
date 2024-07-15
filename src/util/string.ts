@@ -34,3 +34,23 @@ export function humanReadableAge(timestamp: number, now = Math.floor(new Date().
   } } } } }
   return Math.round(n) + unit
 }
+
+export function humanReadableTiming(timestamp: number, now = Math.floor(new Date().valueOf() / 1000)) {
+  let unit = 's'
+  let qualifier = 'late'
+  let n = now - timestamp
+  if (n < 0) {
+    n = -n
+    qualifier = 'early'
+  }
+  if (n == 0) {
+    return 'on time'
+  }
+  if (n > 60) { n /= 60; unit = 'm'
+    if (n > 60) { n /= 60; unit = 'h' 
+      if (n > 24) { n /= 24; unit = 'd' 
+        if (n > 30) { n /= 30; unit = 'mo' 
+          if (n > 12) { n /= 12; unit = 'y'
+  } } } } }
+  return `${Math.round(n)}${unit} ${qualifier}`
+}

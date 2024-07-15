@@ -1,24 +1,21 @@
-import { markAsSeen } from './maintenance'
-import { checkZap } from './db'
-import { respondToPurchase } from './purchase'
-import { log, bolt11amount, humanReadableAge } from './util/string'
+import { markAsSeen } from './checkMaintenance'
+import { detectZapPurchase } from './detectZapPurchase'
+import { log, bolt11amount, humanReadableTiming } from './util/string'
 
 // id precisions for logging
 const WAL_PREC = +(process.env.WAL_PREC || 2)
-const USER_PREC = +(process.env.USER_PREC || 4)
-const EVENT_PREC = +(process.env.EVENT_PREC || 3)
+const USER_PREC = +(process.env.USER_PREC || 3)
+const EVENT_PREC = +(process.env.EVENT_PREC || 4)
 
-let counter = 0
-
-export function handleZap(url: string, zapReceipt: any) {
+export function processZap(url: string, zapReceipt: any) {
   markAsSeen(zapReceipt)
 
   // the request
   const zapRequest = JSON.parse(zapReceipt.tags.filter((e: any) => e[0] == 'description')[0]?.[1])
   zapReceipt.tags = zapReceipt.tags.filter((e: any) => e[0] != 'description') // remove the extracted request from the receipt to avoid data duplication
 
-  // the recipient
-  const recipient = zapRequest.tags.filter((e: any) => e[0] == 'p')[0]?.[1]
+  // the zap recipient
+  const zappedUser = zapRequest.tags.filter((e: any) => e[0] == 'p')[0]?.[1]
 
   // the amount
   const amountTryHarder = () => {
@@ -37,19 +34,22 @@ export function handleZap(url: string, zapReceipt: any) {
   const zappedEvent = e1 || eventTryHarder()
   
   // log a summary line
-  log('ZAAP', `${++counter}. ${url} ` + 
+  log('ZAAP',
     zapReceipt.pubkey.substring(0, WAL_PREC) + ': ' + 
     zapRequest.pubkey.substring(0, USER_PREC) + ' z-> ' + 
-    recipient.substring(0, USER_PREC) + ' ' + 
+    zappedUser.substring(0, USER_PREC) + ' ' + 
     amount.padStart(5,' ') + ' for ' + 
-    zappedEvent?.substring(0, EVENT_PREC) + ' ' + 
-    '(' + humanReadableAge(zapReceipt.created_at) + ' ago)')
+    zappedEvent?.substring(0, EVENT_PREC) + ' (' + 
+    humanReadableTiming(zapReceipt.created_at) + ') ' +
+    url)
 
   // print details for debugging
-  if (zapRequest.pubkey == recipient) log('NOTE', 'self-zap')
-  //if (!zappedEvent) console.log('', JSON.stringify(zapRequest) + '\n', JSON.stringify(zapReceipt))
+  if (zapRequest.pubkey == zappedUser) log('NOTE', 'self-zap')
+  // if (!zappedEvent) console.log('', JSON.stringify(zapRequest) + '\n', JSON.stringify(zapReceipt))
 
-  checkZap(amount, zappedEvent, (message) => {
-    respondToPurchase(zapRequest.pubkey, message)
-  })
+  // the relays to which the product should be sent
+  const relays = zapRequest.tags.filter(e => e[0] == 'relays')[0].slice(1)
+  //log('DEBG', JSON.stringify(relays))
+
+  detectZapPurchase(zapRequest.pubkey, zappedUser, zappedEvent, amount, relays)
 }

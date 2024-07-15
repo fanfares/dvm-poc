@@ -4,7 +4,6 @@ import {getPublicKey, tryJson} from "./misc"
 import logger from "./logger"
 import type {Session} from "./misc"
 import type {Signer} from "./signer"
-import type {Nip04} from "./nip04"
 import type {Nip44} from "./nip44"
 
 export const now = (drift = 0) =>
@@ -42,7 +41,6 @@ const seen = new Map()
 export class Nip59 {
   constructor(
     readonly session: Session,
-    readonly nip04: Nip04,
     readonly nip44: Nip44,
     readonly signer: Signer,
   ) {}
@@ -64,12 +62,7 @@ export class Nip59 {
 
     let payload
 
-    // Temporarily support nip04
-    if (algo === "nip04" && sk) {
-      payload = await this.nip04.encrypt(message, pk, sk)
-    } else if (algo === "nip04") {
-      payload = await this.nip04.encryptAsUser(message, pk)
-    } else if (sk) {
+    if (sk) {
       payload = this.nip44.encrypt(message, pk, sk)
     } else {
       payload = this.nip44.encryptAsUser(message, pk)
@@ -84,20 +77,10 @@ export class Nip59 {
     let message
 
     if (sk) {
-      // Temporarily support nip04
-      if (this.nip04.isEnabled() && content.includes("?iv=")) {
-        message = await this.nip04.decrypt(content, pubkey, sk)
-      }
-
       if (!message && this.nip44.isEnabled()) {
         message = await this.nip44.decrypt(content, pubkey, sk)
       }
     } else {
-      // Temporarily support nip04
-      if (this.nip04.isEnabled() && content.includes("?iv=")) {
-        message = await this.nip04.decryptAsUser(content, pubkey)
-      }
-
       if (!message && this.nip44.isEnabled()) {
         message = await this.nip44.decryptAsUser(content, pubkey)
       }
@@ -143,6 +126,7 @@ export class Nip59 {
 
     try {
       const seal = await this.decrypt(wrap, sk)
+      console.log('DEBG', 'seal ' + JSON.stringify(seal))
 
       if (!seal) throw new Error("Failed to decrypt wrapper")
 

@@ -1,13 +1,26 @@
 {
   "name": "dvm-poc",
+  "private": true,
   "version": "0.0.1",
-  "main": "index.ts",
   "repository": "https://github.com/fanfares/dvm-poc",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "cd src && tsc index",
+    "check:es": "eslint 'src/**/*.{js,ts,svelte}' --quiet",
+    "check:ts": "svelte-check --tsconfig ./tsconfig.json --threshold error",
+    "check:fmt": "prettier --check $(git diff head --name-only --diff-filter d | grep -E '(js|ts|svelte)$' | xargs)",
+    "check:cycles": "madge --circular src/main.js",
+    "check:errors": "run-p check:es check:ts check:cycles",
+    "check": "run-p check:errors check:fmt",
+    "format": "prettier --write $(git diff head --name-only --diff-filter d | grep -E '(js|ts|svelte)$' | xargs)",
+    "watch": "find src -type f | entr -r"
+  },
   "dependencies": {
     "@types/node": "^20.14.9",
     "@welshman/lib": "^0.0.11",
     "@welshman/net": "^0.0.14",
     "@welshman/util": "^0.0.16",
+    "@tsconfig/svelte": "^5.0.4",
     "dotenv": "^16.4.5",
     "hurdak": "^0.2.10",
     "nostr-tools": "^2.7.0",

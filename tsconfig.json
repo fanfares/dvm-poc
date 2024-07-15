@@ -1,5 +1,21 @@
 {
-  "compilerOptions":{
-    "noImplicitAny": false
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "include": ["src/**/*"],
+  "ts-node": {
+    "compilerOptions": {
+      "verbatimModuleSyntax": false,
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "esnext",
+    "paths": {
+      "src/*": ["src/*"]
+    },
+    "isolatedModules": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
+    "strictNullChecks": false
   }
 }
