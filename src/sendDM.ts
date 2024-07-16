@@ -9,7 +9,7 @@ import { publish } from '@welshman/net'
 import crypto from "crypto"
 
 
-/* Aim: NIP-17-compliant direct messages sent using NIP 44 encryption and NIP 59 gift wrapping. */
+/* Aim: state-of-the-art NIP-17-compliant direct messages sent using NIP 44 encryption and NIP 59 gift wrapping. */
 
 export function sendDM(buyer: string, message: string, relays) {
   log('DEBG', `buyer pubkey: ${buyer}`)
@@ -27,7 +27,7 @@ export function sendDM(buyer: string, message: string, relays) {
   const loginWithPrivateKey = (privkey: string, extra = {}) =>
     session = {method: "privkey", pubkey: getPublicKey(privkey), privkey, ...extra}
   loginWithPrivateKey(process.env.DVM_NSEC_HEX)
-  if (!session) { log('PURC', `error: no session`); return }
+  if (!session) { log('SEND', `error: no session`); return }
   if (session.pubkey != getPublicKey(process.env.DVM_NSEC_HEX)) log('DEBG', `DVM pubkey: ${getPublicKey(process.env.DVM_NSEC_HEX)}`)
   log('DEBG', `sender pubkey: ${session.pubkey}`)
 
@@ -94,6 +94,6 @@ export function sendDM(buyer: string, message: string, relays) {
       // if (!sent++) log('SENT', `message: ${message}`)
       sent++
     })
-    setTimeout(() => log('PURC', `DM sent x${sent}`), 5000)
+    setTimeout(() => log('SEND', `DM sent x${sent}`), 5000)
   })
 }

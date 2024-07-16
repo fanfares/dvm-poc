@@ -10,7 +10,7 @@ log('INIT', '-- start --')
 if (!process.env.DVM_NSEC_HEX) {
   log('INIT', `cannot send DMs: no DVM_NSEC_HEX private key specified in .env or environment variable`)
 } else {
-  fs.mkdir(`${process.env.DB_DIR||'db'}/npub`, { recursive: true }, (err) => { if (err) log('INIT', 'error on DB_DIR: ' + err) })
+  fs.mkdir(`${process.env.DB_DIR||'db'}`, { recursive: true }, (err) => { if (err) log('INIT', 'error on DB_DIR: ' + err) })
 
   initMaintenance(() => {
 
