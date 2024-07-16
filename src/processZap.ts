@@ -47,9 +47,8 @@ export function processZap(url: string, zapReceipt: any) {
   if (zapRequest.pubkey == zappedUser) log('NOTE', 'self-zap')
   // if (!zappedEvent) console.log('', JSON.stringify(zapRequest) + '\n', JSON.stringify(zapReceipt))
 
-  // the relays to which the product should be sent
+  // the relays to which the zap receipt was presumably sent
   const relays = zapRequest.tags.filter(e => e[0] == 'relays')[0].slice(1)
-  //log('DEBG', JSON.stringify(relays))
 
   detectZapPurchase(zapRequest.pubkey, zappedUser, zappedEvent, amount, relays)
 }

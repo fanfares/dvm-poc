@@ -51,12 +51,12 @@ export function sendDM(buyer: string, message: string, relays) {
       {
         content: message,
         tags: [
-          ['p', buyer, relays[0]], // TODO: fill in according to NIP-17
+          ['p', buyer], // TODO: is the relay (third element) required?
           ['subject', 'content delivery'],
         ]
       }
     ), {
-      author: null, // kind 14 sender, defaults to DVM secret key
+      author: null, // kind 14 sender, defaults to DVM secret key if null
       wrap: {
         author: randomSK, // kind 1059 sender, secret key, should be random
         recipient: buyer
@@ -65,33 +65,33 @@ export function sendDM(buyer: string, message: string, relays) {
   ).then(value => {
     const { wrap, ...templ } = value
 
-
-    /* This would be unwrapped again as follows:
-
-    log('DEBG', `wrap result ${JSON.stringify(wrap)}`)
-    nip59.unwrap(wrap, buyerSK).then(value => {
-      const { wrap, ...unwrap } = value
-      log('DEBG', `unwrap result ${JSON.stringify(unwrap)}`)
-    }, reason => {
-      log('DEBG', `unwrap failed ${JSON.stringify(reason)}`)
-    })
-
-    */
+    // this can be unwrapped again as follows:
+    // 
+    // log('DEBG', `wrap result ${JSON.stringify(wrap)}`)
+    // nip59.unwrap(wrap, buyerSK).then(value => {
+    //   const { wrap, ...unwrap } = value
+    //   log('DEBG', `unwrap result ${JSON.stringify(unwrap)}`)
+    // }, reason => {
+    //   log('DEBG', `unwrap failed ${JSON.stringify(reason)}`)
+    // })
 
 
-    // Determine which relays to send over
-
-    let sent = [], ackd = []
-    
+    // Determine which relays to send DM over, per NIP 17
     const sub = subscribe({
-      relays: ['wss://relay.primal.net', 'wss://relay.fanfares.io', 'wss://relay.satoshidnc.com'],
+      relays,
       filters: [{
         kinds: [10050 /* inbox relay list */],
         authors: [buyer]
       }],
       timeout: 5/*seconds*/ * 1000/*milliseconds*/,
     })
+
+    // log cumulative status after query timeout expires
+    let sent = [], ackd = []
     setTimeout(() => log('SEND', `outgoing DM results ${JSON.stringify(sent.map(e => e + (ackd[e]?` (${ackd[e]})`:'')))}`), 6/*seconds*/ * 1000/*milliseconds*/)
+
+
+    // send direct message to select relays as the query results come in
 
     sub.emitter.on('eose', (url: string) => {
       // log('QURY', `eose: ${url}`)
