@@ -5,7 +5,7 @@ import { Signer } from './util/coracle/signer'
 import { getPublicKey } from './util/coracle/misc'
 import { log } from './util/string'
 import { createEvent } from '@welshman/util'
-import { publish } from '@welshman/net'
+import { publish, subscribe } from '@welshman/net'
 import crypto from "crypto"
 
 
@@ -81,19 +81,49 @@ export function sendDM(buyer: string, message: string, relays) {
 
     // Determine which relays to send over
 
-    log('DEBG', `relays ${JSON.stringify(relays)}`)
-
+    let sent = [], ackd = []
     
-    // Send the message
-
-    let sent = 0
-    const pub = publish({ event: wrap, relays })
-    pub.emitter.on("*", t => {
-      // log('EVNT', JSON.stringify(t))
-      // log('SENT', JSON.stringify(pub))
-      // if (!sent++) log('SENT', `message: ${message}`)
-      sent++
+    const sub = subscribe({
+      relays: ['wss://relay.primal.net', 'wss://relay.fanfares.io', 'wss://relay.satoshidnc.com'],
+      filters: [{
+        kinds: [10050 /* inbox relay list */],
+        authors: [buyer]
+      }],
+      timeout: 5/*seconds*/ * 1000/*milliseconds*/,
     })
-    setTimeout(() => log('SEND', `DM sent x${sent}`), 5000)
+    setTimeout(() => log('SEND', `outgoing DM results ${JSON.stringify(sent.map(e => e + (ackd[e]?` (${ackd[e]})`:'')))}`), 6/*seconds*/ * 1000/*milliseconds*/)
+
+    sub.emitter.on('eose', (url: string) => {
+      // log('QURY', `eose: ${url}`)
+    })
+    sub.emitter.on('close', (url: string) => {
+      log('QURY', `close: ${url}`)
+    })
+    sub.emitter.on('complete', () => {
+      // log('QURY', `complete`)
+    })
+    sub.emitter.on('duplicate', (url: string, e: any) => {
+      log('QURY', `duplicate: ${url}, ${JSON.stringify(e)}`)
+    })
+    sub.emitter.on('deleted-event', (url: string, e: any) => {
+      log('QURY', `deleted-event: ${url}, ${JSON.stringify(e)}`)
+    })
+    sub.emitter.on('failed-filter', (url: string, e: any) => {
+      log('QURY', `failed-filter: ${url}, ${JSON.stringify(e)}`)
+    })
+    sub.emitter.on('invalid-signature', (url: string, e: any) => {
+      log('QURY', `invalid-signature: ${url}, ${JSON.stringify(e)}`)
+    })
+    sub.emitter.on('event', (url: string, relayList: any) => {
+      relays = relayList.tags.filter(e => e[0] == 'relay').map(e => e[1])
+      // log('QURY', `relays ${JSON.stringify(relays)}`)
+      for (const r of relays) if (!sent.includes(r)) {
+        const pub = publish({ event: wrap, relays: [r] })
+        sent.push(r)
+        pub.emitter.on("*", status => {
+          ackd[r] = status
+        })
+      }
+    })
   })
 }
