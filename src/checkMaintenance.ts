@@ -25,7 +25,7 @@ export function initMaintenance(readyHandler: () => void) {
     cutoff = +fs.readFileSync('cutoff','utf8')
   } catch (e) {
     if (e instanceof Error) {
-      console.warn(e.message)
+      log('WARN', e.message)
     }
   }
   log('INIT', `cutoff: ${cutoff} newest: ${newest} (${humanReadableAge(cutoff, newest)})`)
@@ -33,7 +33,7 @@ export function initMaintenance(readyHandler: () => void) {
   log('INIT', 'loading seen ids...')
   let total = 0
   let lineReader = require('readline').createInterface({
-    input: require('fs').createReadStream('seen')
+    input: fs.createReadStream('seen')
   })
   lineReader.on('line', function (line: string) {
     total++
@@ -41,6 +41,10 @@ export function initMaintenance(readyHandler: () => void) {
     if ((+parts[0]) >= cutoff) {
       seenZaps.push(parts[1])
     }
+  })
+  lineReader.on('error', function(e) {
+    log('WARN', `unable to read file 'seen'; inexistence ok on first run: ${e.message}`)
+    readyHandler()
   })
   lineReader.on('close', function () {
     log('INIT', `remembering ${seenZaps.length}/${total} seen ids; begin subscription`)
@@ -67,11 +71,13 @@ export function checkMaintenance() {
       fs.renameSync('seen', 'seen~')
     } catch (e) {
       if (e instanceof Error) {
-        console.error(e.message)
+        log('WARN', `could not rename 'seen'; inexistence ok on first run: ${e.message}`)
+      } else {
+        log('EROR', `could not rename 'seen' to 'seen~'`)
       }
     }
     let lineReader = require('readline').createInterface({
-      input: require('fs').createReadStream('seen~')
+      input: fs.createReadStream('seen~')
     })
     lineReader.on('line', function (line: string) {
       total++
@@ -81,13 +87,18 @@ export function checkMaintenance() {
         fs.writeFileSync('seen', `${line}\n`, { encoding: "utf8", flag: "a+", mode: 0o666, })
       }
     })
+    lineReader.on('error', function(e) {
+      log('WARN', `inexistence ok on first run: ${e.message}`)
+    })
     lineReader.on('close', function () {
       log('MANT', `kept ${copied}/${total} seen ids`)
       try {
         fs.unlinkSync('seen~')
       } catch (e) {
         if (e instanceof Error) {
-          console.warn(e.message)
+          log('EROR', `unable to delete file 'seen~': ${e.message}`)
+        } else {
+          log('EROR', `unable to delete file 'seen~'`)
         }
       }
     })

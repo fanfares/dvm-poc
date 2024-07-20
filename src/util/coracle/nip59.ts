@@ -126,7 +126,6 @@ export class Nip59 {
 
     try {
       const seal = await this.decrypt(wrap, sk)
-      console.log('DEBG', 'seal ' + JSON.stringify(seal))
 
       if (!seal) throw new Error("Failed to decrypt wrapper")
 

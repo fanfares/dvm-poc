@@ -45,7 +45,7 @@ export function processZap(url: string, zapReceipt: any) {
 
   // print details for debugging
   if (zapRequest.pubkey == zappedUser) log('NOTE', 'self-zap')
-  // if (!zappedEvent) console.log('', JSON.stringify(zapRequest) + '\n', JSON.stringify(zapReceipt))
+  // if (!zappedEvent) log('DEBG', '', JSON.stringify(zapRequest) + '\n', JSON.stringify(zapReceipt))
 
   // the relays to which the zap receipt was presumably sent
   const relays = zapRequest.tags.filter(e => e[0] == 'relays')[0].slice(1)
