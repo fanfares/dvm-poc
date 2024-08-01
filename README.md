@@ -5,7 +5,7 @@ This digital vending machine (DVM) watches for public zaps and compares them to 
 ## How to run it
 
 - `git clone https://github.com/fanfares/zapwatcher-dvm-poc`
-- `cd dvm-poc`
+- `cd zapwatcher-dvm-poc`
 - `yarn install`
 - `yarn ts-node src/index.ts`
 
